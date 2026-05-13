@@ -3,19 +3,27 @@ from scipy.optimize import linear_sum_assignment
 from scipy.spatial.distance import cdist
 from kalman_tracker import KalmanTracker
 
+classVariance = {
+    0: 70,
+    1: 80,
+    2: 110,
+    3: 120,
+    5: 100,
+    7: 100,
+}
+
 class KalmanManager:
-    def __init__(self, objVariance, measureVariance, distThreshold, coastThreshold):
+    def __init__(self, measureVariance, distThreshold, coastThreshold):
         self.trackers = []
-        self.objVariance = objVariance
         self.measureVariance = measureVariance
         self.distThreshold = distThreshold
         self.coastThreshold = coastThreshold
         self.IDcounter = 0
 
-    def updateFrame(self, detections):
+    def updateFrame(self, detections, objList):
         if len(self.trackers) == 0:
-            for d in detections:
-                newTracker = KalmanTracker(d, self.objVariance, self.measureVariance, self.IDcounter)
+            for d, v in zip(detections, objList):
+                newTracker = KalmanTracker(d, classVariance[v], self.measureVariance, self.IDcounter)
                 self.trackers.append(newTracker)
                 self.IDcounter += 1
         elif len(detections) == 0:
@@ -50,7 +58,7 @@ class KalmanManager:
             noMatchDet = allDet - matchDet
             noMatchDet = noMatchDet | set(unmatchDet)
             for d in noMatchDet:
-                newTracker = KalmanTracker(detections[d], self.objVariance, self.measureVariance, self.IDcounter)
+                newTracker = KalmanTracker(detections[d], classVariance[objList[d]], self.measureVariance, self.IDcounter)
                 self.trackers.append(newTracker)
                 self.IDcounter += 1
             #6. filter self.trackers by coastThreshold
