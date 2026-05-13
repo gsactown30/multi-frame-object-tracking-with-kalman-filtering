@@ -21,25 +21,35 @@ The pipeline introduces no external tracking libraries. The Kalman filter, cost 
  
 Each tracked object is represented by a 4-dimensional state vector:
  
-$$\mathbf{x} = \begin{bmatrix} x \\ y \\ v_x \\ v_y \end{bmatrix}$$
- 
+$$
+\mathbf{x} = \begin{bmatrix} x \\ y \\ v_x \\ v_y \end{bmatrix}
+$$
+
 where $(x, y)$ is the bounding box center in pixel space and $(v_x, v_y)$ is the estimated velocity in pixels per frame. Position is directly observable from YOLO detections; velocity is inferred by the filter from successive measurements.
  
 ### Constant Velocity Motion Model
  
 State propagation uses a constant velocity model with timestep $\Delta t = 0.1$s (10Hz KITTI frame rate):
  
-$$\mathbf{x}_{t} = F\mathbf{x}_{t-1}$$
- 
-$$F = \begin{bmatrix} 1 & 0 & \Delta t & 0 \\ 0 & 1 & 0 & \Delta t \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \end{bmatrix}$$
+$$
+\mathbf{x}_{t} = F\mathbf{x}_{t-1}
+$$
+
+$$
+F = \begin{bmatrix} 1 & 0 & \Delta t & 0 \\ 0 & 1 & 0 & \Delta t \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \end{bmatrix}
+$$
  
 ### Kalman Predict Step
  
 The predict step propagates both the state estimate and its uncertainty forward:
  
-$$\mathbf{x}_{t|t-1} = F\mathbf{x}_{t-1|t-1}$$
- 
-$$P_{t|t-1} = FP_{t-1|t-1}F^\top + Q$$
+$$
+\mathbf{x}_{t|t-1} = F\mathbf{x}_{t-1|t-1}
+$$
+
+$$
+P_{t|t-1} = FP_{t-1|t-1}F^\top + Q
+$$
  
 where $P$ is the $4 \times 4$ covariance matrix representing uncertainty in the state estimate, and $Q$ is the process noise matrix — a scaled identity matrix parameterized per object class reflecting how unpredictably each object type moves.
  
@@ -47,20 +57,29 @@ where $P$ is the $4 \times 4$ covariance matrix representing uncertainty in the 
  
 YOLO detections are 2D bounding box centers — a subset of the full 4D state. The observation matrix $H$ projects from state space to measurement space:
  
-$$H = \begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \end{bmatrix}$$
- 
+$$
+H = \begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \end{bmatrix}
+$$ 
 ### Kalman Update Step
  
 When a detection is associated with a track, the update step fuses the predicted state with the measurement:
  
-$$\mathbf{y} = \mathbf{z} - H\mathbf{x}_{t|t-1} \quad \text{(residual)}$$
- 
-$$K = P_{t|t-1}H^\top(HP_{t|t-1}H^\top + R)^{-1} \quad \text{(Kalman gain)}$$
- 
-$$\mathbf{x}_{t|t} = \mathbf{x}_{t|t-1} + K\mathbf{y}$$
- 
-$$P_{t|t} = (I - KH)P_{t|t-1}$$
- 
+$$
+\mathbf{y} = \mathbf{z} - H\mathbf{x}_{t|t-1} \quad \text{(residual)}
+$$
+
+$$
+K = P_{t|t-1}H^\top(HP_{t|t-1}H^\top + R)^{-1} \quad \text{(Kalman gain)}
+$$
+
+$$
+\mathbf{x}_{t|t} = \mathbf{x}_{t|t-1} + K\mathbf{y}
+$$
+
+$$
+P_{t|t} = (I - KH)P_{t|t-1}
+$$
+
 where $R$ is the $2 \times 2$ measurement noise matrix reflecting YOLO bounding box jitter, and $K$ is the Kalman gain — the dynamic weight that shifts trust between prediction and measurement based on their relative uncertainties. When prediction uncertainty is high, $K$ weights the measurement more heavily; when measurement noise is high, the prediction dominates.
  
 The posterior covariance $P_{t|t}$ is always lower than either $P_{t|t-1}$ or $R$ alone — fusing two independent sources of information strictly reduces uncertainty.
@@ -71,8 +90,10 @@ Each frame, detections from YOLO must be matched to existing tracks. This is for
  
 The cost matrix $C \in \mathbb{R}^{M \times N}$ is built using Euclidean distance between predicted track positions and detection centers:
  
-$$C_{ij} = \|\hat{\mathbf{x}}_i^{(pos)} - \mathbf{z}_j\|_2$$
- 
+$$
+C_{ij} = \|\hat{\mathbf{x}}_i^{(pos)} - \mathbf{z}_j\|_2
+$$
+
 The Hungarian algorithm (via `scipy.optimize.linear_sum_assignment`) solves this in $O(n^3)$ time. Pairs exceeding a distance threshold are rejected and treated as unmatched, preventing implausible long-range associations.
 
 ---
@@ -117,6 +138,7 @@ Different object classes have fundamentally different motion characteristics. A 
 Results were generated using KITTI sequence `2011_09_26_drive_0011`.
 
 ![Tracking Output](output/tracking0011.gif)
+
 *Tracked objects with persistent IDs and trajectory tails overlaid on KITTI frames. Yellow dots show the position history of each active track.*
 ---
 
