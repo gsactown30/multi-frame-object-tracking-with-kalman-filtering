@@ -36,7 +36,7 @@ $$
 $$
 
 $$
-F = \begin{bmatrix} 1 & 0 & \Delta t & 0 \\ 0 & 1 & 0 & \Delta t \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \end{bmatrix}
+F = \begin{bmatrix} 1 & 0 & \Delta t & 0 \\\\ 0 & 1 & 0 & \Delta t \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \end{bmatrix}
 $$
  
 ### Kalman Predict Step
@@ -59,7 +59,8 @@ YOLO detections are 2D bounding box centers — a subset of the full 4D state. T
  
 $$
 H = \begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \end{bmatrix}
-$$ 
+$$
+
 ### Kalman Update Step
  
 When a detection is associated with a track, the update step fuses the predicted state with the measurement:
@@ -138,8 +139,8 @@ Different object classes have fundamentally different motion characteristics. A 
 Results were generated using KITTI sequence `2011_09_26_drive_0011`.
 
 ![Tracking Output](output/tracking0011.gif)
-
 *Tracked objects with persistent IDs and trajectory tails overlaid on KITTI frames. Yellow dots show the position history of each active track.*
+
 ---
 
 ## Installation
