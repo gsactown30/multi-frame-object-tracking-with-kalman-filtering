@@ -22,7 +22,7 @@ The pipeline introduces no external tracking libraries. The Kalman filter, cost 
 Each tracked object is represented by a 4-dimensional state vector:
  
 $$
-\mathbf{x} = \begin{bmatrix} x \\ y \\ v_x \\ v_y \end{bmatrix}
+\mathbf{x} = \begin{bmatrix} x \\\\ y \\\\ v_x \\\\ v_y \end{bmatrix}
 $$
 
 where $(x, y)$ is the bounding box center in pixel space and $(v_x, v_y)$ is the estimated velocity in pixels per frame. Position is directly observable from YOLO detections; velocity is inferred by the filter from successive measurements.
@@ -36,7 +36,7 @@ $$
 $$
 
 $$
-F = \begin{bmatrix} 1 & 0 & \Delta t & 0 \\\\ 0 & 1 & 0 & \Delta t \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \end{bmatrix}
+F = \begin{bmatrix} 1 & 0 & \Delta t & 0 \\\\ 0 & 1 & 0 & \Delta t \\\\ 0 & 0 & 1 & 0 \\\\ 0 & 0 & 0 & 1 \end{bmatrix}
 $$
  
 ### Kalman Predict Step
@@ -58,7 +58,7 @@ where $P$ is the $4 \times 4$ covariance matrix representing uncertainty in the 
 YOLO detections are 2D bounding box centers — a subset of the full 4D state. The observation matrix $H$ projects from state space to measurement space:
  
 $$
-H = \begin{bmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \end{bmatrix}
+H = \begin{bmatrix} 1 & 0 & 0 & 0 \\\\ 0 & 1 & 0 & 0 \end{bmatrix}
 $$
 
 ### Kalman Update Step
