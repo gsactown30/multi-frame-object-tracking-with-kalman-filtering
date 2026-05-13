@@ -36,6 +36,7 @@ class KalmanTracker:
         self.numPredicts += 1
 
     def update(self, newMeasure):
+        #observation matrix
         H = np.array(([1, 0, 0, 0],
                       [0, 1, 0, 0]))
 
