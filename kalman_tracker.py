@@ -4,7 +4,7 @@ from collections import deque
 class KalmanTracker:
     def __init__(self, state, objVariance, measureVariance, ID):
         self.ID = ID
-        self.tails = deque(maxlen=30)
+        self.tails = deque(maxlen=15)
         x, y = state
         self.stateVector = np.array([x, y, 0, 0])
         self.stateVector = self.stateVector.reshape(4,1)
