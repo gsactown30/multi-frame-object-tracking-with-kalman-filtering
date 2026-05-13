@@ -18,7 +18,9 @@ class KalmanTracker:
                                      [0, 0, 0, 1],))
 
     def getCoord(self):
-        coord = (self.stateVector[0], self.stateVector[1])
+        x = self.stateVector[0][0]
+        y = self.stateVector[1][0]
+        coord = (x, y)
         return coord
 
     def getID(self):

@@ -28,12 +28,9 @@ class KalmanManager:
                 t.predict()
             # 2. build cost matrix
             tPositions = np.array([t.getCoord() for t in self.trackers])
-            print(tPositions)
-            print(tPositions.shape)
-            tPositions = tPositions.reshape(-1, 2)
+
             dPositions = np.array([d for d in detections])
-            print(dPositions)
-            print(dPositions.shape)
+
             costMatrix = cdist(tPositions, dPositions, 'euclidean')
 
 
@@ -41,15 +38,17 @@ class KalmanManager:
             row, col = linear_sum_assignment(costMatrix)
 
             # 4. threshold check all
+            unmatchDet = []
             for r, c in zip(row, col):
                 if costMatrix[r, c].sum() < self.distThreshold:
                     self.trackers[r].update(detections[c])
                 else:
-                    continue
+                    unmatchDet.append(c)
             #5. set difference to find unmatched detections → create new trackers
             matchDet = set(col)
             allDet = set(range(len(detections)))
             noMatchDet = allDet - matchDet
+            noMatchDet = noMatchDet | set(unmatchDet)
             for d in noMatchDet:
                 newTracker = KalmanTracker(detections[d], self.objVariance, self.measureVariance, self.IDcounter)
                 self.trackers.append(newTracker)
