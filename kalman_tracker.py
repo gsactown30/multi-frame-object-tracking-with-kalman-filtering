@@ -1,8 +1,10 @@
 import numpy as np
+from collections import deque
 
 class KalmanTracker:
     def __init__(self, state, objVariance, measureVariance, ID):
         self.ID = ID
+        self.tails = deque(maxlen=30)
         x, y = state
         self.stateVector = np.array([x, y, 0, 0])
         self.stateVector = self.stateVector.reshape(4,1)
@@ -22,7 +24,11 @@ class KalmanTracker:
     def getID(self):
         return self.ID
 
+    def getTails(self):
+        return self.tails
+
     def predict(self):
+        self.tails.append(self.getCoord())
         self.stateVector = self.motionModel @ self.stateVector
         self.covariance = self.motionModel @ self.covariance @ self.motionModel.T + self.objVariance
         self.numPredicts += 1
